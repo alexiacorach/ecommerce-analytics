@@ -7,11 +7,12 @@ interface JwtPayload {
   id: string;
   role: string;
 }
-
+//Middleware to validate jwt token and add user to req
 export const protect = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
+
   if (!authHeader || !authHeader.startsWith('Bearer '))
-    return res.status(401).json({ message: 'Not authorized' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
 
   const token = authHeader.split(' ')[1];
 
@@ -23,7 +24,7 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 };
-
+//middleware to authorize admin
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   const user = (req as any).user;
   if (!user || user.role !== 'admin')
