@@ -4,6 +4,8 @@ import cors from "cors";
 import connectDB from "./config/db";
 import authRouter from './routes/auth';
 import productRouter from "./routes/productRoutes";
+import orderRouter from "./routes/orderRoutes";
+import analyticsRouter from "./routes/analyticsRoutes"
 
 
 dotenv.config();
@@ -15,6 +17,8 @@ app.use(express.json());
 
 app.use('/api/auth', authRouter);
 app.use("/api/products", productRouter);
+app.use("/api/orders", orderRouter)
+app.use("/api/analytics", analyticsRouter)
 
 // Ruta de prueba
 app.get("/", (req, res) => {

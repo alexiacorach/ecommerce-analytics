@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { AuthRequest } from '../types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'defaultsecret';
 
@@ -8,7 +9,7 @@ interface JwtPayload {
   role: string;
 }
 //Middleware to validate jwt token and add user to req
-export const protect = (req: Request, res: Response, next: NextFunction) => {
+export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer '))
@@ -18,15 +19,15 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    (req as any).user = { id: decoded.id, role: decoded.role };
+    req.user = { id: decoded.id, role: decoded.role, email: ''};
     next();
   } catch {
     res.status(401).json({ message: 'Invalid token' });
   }
 };
 //middleware to authorize admin
-export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  const user = (req as any).user;
+export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const user = req.user;
   if (!user || user.role !== 'admin')
     return res.status(403).json({ message: 'Admin role required' });
   next();
