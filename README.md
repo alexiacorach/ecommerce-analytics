@@ -9,10 +9,10 @@ Actualmente el backend está completamente funcional, probado con Thunder Client
 - Registro y login de usuarios con JWT
 - Roles diferenciados: `cliente`, `administrador`
 
-- GESTON DE PRODUCTOS
+-GESTON DE PRODUCTOS
 - Crear, actualizar, eliminar y listar productos (solo admin)
 
-- CARRITO DE COMPRAS
+-CARRITO DE COMPRAS
 - Agregar productos al carrito: Los usuarios pueden añadir productos especificando la cantidad deseada.
 - Eliminar productos del carrito: Posibilidad de eliminar productos específicos.
 - Actualizar cantidades: Modificar la cantidad de un producto en el carrito.
