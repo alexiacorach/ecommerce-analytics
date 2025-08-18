@@ -6,6 +6,7 @@ import authRouter from './routes/auth';
 import productRouter from "./routes/productRoutes";
 import orderRouter from "./routes/orderRoutes";
 import analyticsRouter from "./routes/analyticsRoutes"
+import cartRouter from './routes/cartRoutes';
 
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use('/api/auth', authRouter);
 app.use("/api/products", productRouter);
 app.use("/api/orders", orderRouter)
 app.use("/api/analytics", analyticsRouter)
+app.use('/api/cart', cartRouter);
 
 // Ruta de prueba
 app.get("/", (req, res) => {

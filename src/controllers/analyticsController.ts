@@ -1,7 +1,8 @@
 import { Response } from 'express';
 import Order from '../models/Order';
 import Product from '../models/Product';
-import { AuthRequest } from '../types';
+import User from '../models/User';
+import { AuthRequest } from '../types/index';
 
 // Total sales per period (day, month, year). Query params: ?start=YYYY-MM-DD&end=YYYY-MM-DD
 export const getSalesByPeriod = async (req: AuthRequest, res: Response) => {
@@ -52,18 +53,108 @@ export const getSalesByPeriod = async (req: AuthRequest, res: Response) => {
     };
 }
 
+// Products top sale. rankins x sales
+export const getTopProducts = async (req: AuthRequest, res: Response) => {
+    try {
+        const { start, end, category, limit } = req.query;
 
-// 2. Productos más vendidos
-export const getTopProducts = async (_req: AuthRequest, res: Response) => {
-    // Agregación para rankear productos por cantidad vendida
-};
+        const startDate = start ? new Date(start as string) : undefined;
+        const endDate = end ? new Date(end as string) : undefined;
+        const topN = limit ? Number(limit) : 10;
 
-// 3. Clientes con más compras
+        const pipeline: any[] = [];
+
+        //filter by date. avoid cancelled
+        const match: any = { status: { $ne: 'cancelled' } };
+        if (startDate && endDate) {
+            match.createdAt = { $gte: startDate, $lte: endDate }
+        }
+        pipeline.push({ $match: match });
+
+        //explode items
+        pipeline.push({ $unwind: "$items" });
+
+        //join products to obtain name/category
+        pipeline.push({
+            $lookup: {
+                from: "products",
+                localField: "items.product",
+                foreignField: "_id",
+                as: "product"
+            }
+        })
+        pipeline.push({ $unwind: "$product" });
+
+        //optional filter by category
+        if (category) {
+            pipeline.push({ $match: { "product.category": category } });
+        }
+
+        //group by product (cuant, income)
+        pipeline.push({
+            $group: {
+                _id: "$product._id",
+                name: { $first: "$product.name" },
+                category: { $first: "$product.category" },
+                unitsSold: { $sum: "$items.quantity" },
+                // usamos el precio guardado en el item (precio al momento de la compra)
+                revenue: { $sum: { $multiply: ["$items.quantity", "$items.price"] } }
+            }
+        })
+
+        pipeline.push({ $sort: { unitsSold: -1, revenue: -1 } });
+        pipeline.push({ $limit: topN });
+
+        const result = await Order.aggregate(pipeline);
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error getting top products" });
+    }
+}
+
+// Top customers
 export const getTopCustomers = async (_req: AuthRequest, res: Response) => {
-    // Agregación para rankear clientes por total gastado
+    try {
+        const topCustomers = await Order.aggregate([
+            {
+                $match: { status: { $ne: 'cancelled' } } // excludes  cancelles=d orders
+            },
+            {
+                $group: {
+                    _id: "$customer",
+                    totalSpent: { $sum: "$total" },
+                    totalOrders: { $sum: 1 }
+                }
+            },
+            { $sort: { totalSpent: -1 } },
+            { $limit: 5 }
+        ]);
+
+        // Populate customer with basic info
+        await User.populate(topCustomers, { path: "_id", select: "name email" });
+
+        res.json(topCustomers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error obtaining top customers" });
+    }
+
 };
 
-// 4. Productos con bajo stock
-export const getLowStockProducts = async (_req: AuthRequest, res: Response) => {
-    // Consulta simple: stock < threshold
-};
+// Low stock Products
+export const getLowStockProducts = async (req: AuthRequest, res: Response) => {
+    try {
+        const threshold = parseInt(req.query.threshold as string) || 5;
+
+        const products = await Product.find({ stock: { $lte: threshold } })
+            .select("name stock price")
+            .sort({ stock: 1 })
+
+        res.json(products);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error obtaining low stock products" })
+
+    }
+}
