@@ -1,13 +1,15 @@
 //conecta los endpoints con los controladores
 
 import { Router } from "express";
-import { getAllProducts, createProduct, updateProduct, deleteProduct } from "../controllers/productController";
+import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct } from "../controllers/productController";
 import { protect, isAdmin } from "../middlewares/authMiddleware";
 
 const router = Router();
 
 
 router.get("/", getAllProducts);
+
+router.get("/:id", getProductById); 
 
 router.post("/", protect, isAdmin, createProduct);
 
