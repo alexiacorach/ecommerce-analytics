@@ -10,7 +10,7 @@ export interface IOrder extends Document {
     customer: Types.ObjectId; //reference to User
     items: IOrderItem[];
     total: number;
-    status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+    status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'canceled';
     paid: boolean;
     createdAt: Date;
 }
@@ -47,7 +47,7 @@ const OrderSchema = new Schema<IOrder>({
     },
     status: {
         type: String,
-        enum: ['pending', 'paid', 'shipped', 'delivered', 'cancelled'],
+        enum: ['pending', 'paid', 'shipped', 'delivered', 'canceled'],
         default: 'pending'
     },
     paid: {

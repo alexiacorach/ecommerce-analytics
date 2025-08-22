@@ -66,6 +66,36 @@ export const getMyOrders = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Error retrieving your orders', error });
     }
 };
+//cancell order
+export const cancelOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.customer.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to cancel this order" });
+    }
+
+    // cancel only if pending order
+    if (order.status !== "pending") {
+      return res.status(400).json({ message: "Only pending orders can be canceled" });
+    }
+
+    order.status = "canceled";
+    await order.save();
+
+    res.json({ message: "Order canceled successfully", order });
+  } catch (error) {
+    res.status(500).json({ message: "Error canceling order", error });
+  }
+};
+
 
 //Admin can see all orders
 export const getAllOrders = async (req: AuthRequest, res: Response) => {
@@ -79,3 +109,25 @@ export const getAllOrders = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: "Error fetching orders", error });
     }
 }
+
+//admin can update status
+export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const { status } = req.body;
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating order status", error });
+  }
+};
