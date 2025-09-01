@@ -151,15 +151,15 @@ export const cancelOrder = async (req: AuthRequest, res: Response) => {
 export const payOrder = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { orderId } = req.params;
+    const { id } = req.params;
 
     if (!userId) return res.status(401).json({ message: "Not authorized" });
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(id);
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // on;y c;ient can pay
+    // only client can pay
     if (order.customer.toString() !== userId) {
       return res.status(403).json({ message: "Not authorized to pay this order" });
     }
