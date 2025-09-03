@@ -8,14 +8,14 @@ const router = Router();
 router.post("/", protect, createOrder);
 //get Order List
 router.get("/", protect, getMyOrders );
+//all orders for Admin
+router.get('/all', protect, isAdmin, getAllOrders);
 //get order by id
 router.get("/:id", protect, getOrderById)
 //cancel order
 router.put("/:orderId/cancel", protect, cancelOrder);
 //payment order
 router.put("/:id/pay", protect, payOrder);
-//all orders for Admin
-router.get('/all', protect, isAdmin, getAllOrders);
 //update order status
 router.put("/:id/status", protect, isAdmin, updateOrderStatus);
 
