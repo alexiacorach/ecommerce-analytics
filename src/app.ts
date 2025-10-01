@@ -27,11 +27,11 @@ app.get("/", (req, res) => {
   res.json({ message: "API funcionando " });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || "5000", 10);
 
 const startServer = async () => {
   await connectDB();
-  app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
+  app.listen(PORT, "0.0.0.0", () => console.log(`Servidor en puerto ${PORT}`));
 };
 
 startServer();
