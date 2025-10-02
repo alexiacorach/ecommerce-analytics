@@ -13,7 +13,11 @@ dotenv.config();
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: 'https://d1a7h2pd8rli18.cloudfront.net', // tu frontend en CloudFront
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],        // métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'] // headers permitidos
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRouter);
