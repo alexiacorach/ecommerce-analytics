@@ -41,3 +41,6 @@ Actualmente el backend está completamente funcional, probado con Thunder Client
 - **bcryptjs** (Encriptación de contraseñas)
 - **dotenv** (Variables de entorno)
 - **Postman** (para testing de endpoints)
+
+## Deploy AWS
+ http://54.221.97.118/
